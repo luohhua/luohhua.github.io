@@ -1,6 +1,6 @@
 /* ----
 
-# Hingle Theme
+# ReHingle Theme
 # By: Dreamer-Paul
 # Last Update: 2024.9.2
 
@@ -10,7 +10,7 @@
 
 ---- */
 
-var Paul_Hingle = function (config) {
+var Paul_ReHingle = function (config) {
     var body = document.body;
     var content = ks.select(".post-content:not(.is-special), .page-content:not(.is-special)");
 
@@ -222,5 +222,5 @@ ks.image(".post-content:not(.is-special) img, .page-content:not(.is-special) img
 
 // 请保留版权说明
 if(window.console && window.console.log){
-    console.log("%c Hingle %c https://paugram.com ","color: #fff; margin: 1em 0; padding: 5px 0; background: #6f9fc7;","margin: 1em 0; padding: 5px 0; background: #efefef;");
+    console.log("%c ReHingle %c https://github.com/luohhua/hexo-theme-rehingle ","color: #fff; margin: 1em 0; padding: 5px 0; background: #6f9fc7;","margin: 1em 0; padding: 5px 0; background: #efefef;");
 }
