@@ -549,6 +549,13 @@ main img {
     font-style: oblique;
 }
 
+.home-title .home-hitokoto{
+    margin: .2em 0 .8em;
+    font-size: .9em;
+    color: #8a8a8a;
+    font-style: italic;
+}
+
 /* - 社交链接 */
 .home-social{
     cursor: default;
@@ -633,6 +640,8 @@ main img {
 .post-meta .user:before{ content: "\f007" }
 .post-meta .comments:before{ content: "\f086" }
 .post-meta .view:before{ content: "\f080" }
+.post-meta .post-views:before{ content: none }
+.post-meta .post-views .fa-eye{ margin-right: .2em }
 
 /* - 换页 */
 .page-navigator{
