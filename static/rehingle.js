@@ -36,16 +36,20 @@ var Paul_ReHingle = function (config) {
     this.night = function () {
         if(body.classList.contains("dark-theme")){
             body.classList.remove("dark-theme");
-            document.cookie = "night=false;" + "path=/;" + "max-age=21600";
+            localStorage.setItem("rehingle-night", "false");
         }
         else{
             body.classList.add("dark-theme");
-            document.cookie = "night=true;" + "path=/;" + "max-age=21600";
+            localStorage.setItem("rehingle-night", "true");
         }
     };
 
     // 目录树
     this.tree = function () {
+        if (document.querySelector(".no-trees")) {
+            return;
+        }
+
         const wrap = ks.select(".wrap");
         const headings = content.querySelectorAll("h1, h2, h3, h4, h5, h6");
 
@@ -85,10 +89,42 @@ var Paul_ReHingle = function (config) {
             const level = Number(t.tagName.substring(1)) - firstLevel + 1;
             const className = `item-${level}`;
 
-            trees.appendChild(ks.create("a", { class: className, text, href: `#title-${index}` }));
+            trees.appendChild(ks.create("a", {
+                class: className,
+                text,
+                href: `#title-${index}`,
+                attr: [
+                    {name: "data-id", value: "title-" + index},
+                ],
+            }));
         });
 
         wrap.appendChild(trees);
+
+        // 滚动时高亮当前章节
+        const tocLinks = trees.querySelectorAll("a");
+
+        const updateActive = function () {
+            const offset = 120;
+            let current = null;
+
+            ks.each(headings, (h, i) => {
+                if (h.getBoundingClientRect().top <= offset) {
+                    current = i;
+                }
+            });
+
+            if (current === null && headings.length > 0) {
+                current = 0;
+            }
+
+            ks.each(tocLinks, function (link, i) {
+                link.classList.toggle("active", i === current);
+            });
+        };
+
+        window.addEventListener("scroll", updateActive, { passive: true });
+        updateActive();
 
         // 绑定元素
         const buttons = ks.select("footer .buttons");
@@ -138,6 +174,130 @@ var Paul_ReHingle = function (config) {
         scroll >= window.innerHeight / 2 ? btn.classList.add("active") : btn.classList.remove("active");
     };
 
+    // 星空/粒子背景
+    this.starfield = function () {
+        var canvas = document.getElementById("starfield");
+
+        if (!canvas || !config.starfield || !config.starfield.enable) {
+            if (canvas) canvas.remove();
+            return;
+        }
+
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            canvas.remove();
+            return;
+        }
+
+        var ctx = canvas.getContext("2d");
+        var density = config.starfield.density || 0.00012;
+        var stars = [];
+        var particles = [];
+        var rafId = null;
+        var running = true;
+
+        var resize = function () {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            var count = Math.min(180, Math.floor(canvas.width * canvas.height * density));
+            stars = [];
+            particles = [];
+
+            for (var i = 0; i < count; i++) {
+                var isParticle = i % 12 === 0;
+                var base = {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: isParticle ? 1.5 + Math.random() * 2 : Math.random() * 1.6 + .6,
+                    a: Math.random() * .6 + .45
+                };
+
+                if (isParticle) {
+                    base.vx = (Math.random() - .5) * .25;
+                    base.vy = (Math.random() - .5) * .25;
+                    particles.push(base);
+                }
+                else {
+                    base.twinkle = Math.random() * Math.PI * 2;
+                    base.speed = Math.random() * .02 + .005;
+                    stars.push(base);
+                }
+            }
+        };
+
+        var draw = function () {
+            if (!running) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 星星闪烁
+            for (var i = 0; i < stars.length; i++) {
+                var s = stars[i];
+                s.twinkle += s.speed;
+                ctx.globalAlpha = s.a * (0.55 + 0.45 * Math.sin(s.twinkle));
+                ctx.fillStyle = "#ffffff";
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 粒子漂浮 + 连线
+            for (var j = 0; j < particles.length; j++) {
+                var p = particles[j];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                ctx.globalAlpha = p.a;
+                ctx.fillStyle = "#9fcff7";
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 粒子间连线
+            ctx.globalAlpha = .12;
+            ctx.strokeStyle = "#9fcff7";
+            ctx.lineWidth = 1;
+            for (var m = 0; m < particles.length; m++) {
+                for (var n = m + 1; n < particles.length; n++) {
+                    var dx = particles[m].x - particles[n].x;
+                    var dy = particles[m].y - particles[n].y;
+                    var dist = dx * dx + dy * dy;
+                    if (dist < 120 * 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[m].x, particles[m].y);
+                        ctx.lineTo(particles[n].x, particles[n].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            ctx.globalAlpha = 1;
+            rafId = requestAnimationFrame(draw);
+        };
+
+        resize();
+        window.addEventListener("resize", resize);
+        draw();
+
+        // 页面不可见时暂停，省性能
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) {
+                running = false;
+                if (rafId) cancelAnimationFrame(rafId);
+            }
+            else if (!running) {
+                running = true;
+                draw();
+            }
+        });
+    };
+
     this.header();
 
     if(content){
@@ -146,25 +306,23 @@ var Paul_ReHingle = function (config) {
         this.comment_list();
     }
 
+    this.starfield();
+
     // 返回页首
     window.addEventListener("scroll", this.to_top);
 
-    // 如果开启自动夜间模式
-    if(config.night){
-        var hour = new Date().getHours();
+    // 夜间模式：手动选择优先（localStorage 持久化，刷新不掉），否则跟随系统
+    var saved = localStorage.getItem("rehingle-night");
 
-        if(document.cookie.indexOf("night") === -1 && (hour <= 5 || hour >= 22)){
-            document.body.classList.add("dark-theme");
-            document.cookie = "night=true;" + "path=/;" + "max-age=21600";
-        }
+    if (saved === "true") {
+        body.classList.add("dark-theme");
     }
-    else if(document.cookie.indexOf("night") !== -1){
-        if(document.cookie.indexOf("night=true") !== -1){
-            document.body.classList.add("dark-theme");
-        }
-        else{
-            document.body.classList.remove("dark-theme");
-        }
+    else if (saved === "false") {
+        body.classList.remove("dark-theme");
+    }
+    else if (config.night && window.matchMedia) {
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        body.classList.toggle("dark-theme", prefersDark);
     }
 
     // 如果开启复制内容提示

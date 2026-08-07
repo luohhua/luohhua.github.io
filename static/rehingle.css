@@ -39,10 +39,19 @@ body:before{
     right: 0;
     bottom: 0;
     opacity: .1;
-    z-index: -1;
+    z-index: -2;
     display: block;
     position: fixed;
     background: center/cover no-repeat;
+}
+
+/* - 星空/粒子背景 */
+#starfield{
+    top: 0;
+    left: 0;
+    z-index: -1;
+    position: fixed;
+    pointer-events: none;
 }
 
 ::-webkit-scrollbar{
@@ -170,13 +179,6 @@ em{
     color: #27a17e;
 }
 
-.dark-theme .post-content .copy-btn{ color: #888 }
-.dark-theme .post-content .copy-btn:hover{
-    color: #ccc;
-    background: rgba(255, 255, 255, .08);
-}
-.dark-theme .post-content .copy-btn.copied{ color: #5ec4a1 }
-
 /* - 图片加载动画 */
 .post-content img.img-loading{
     opacity: 0;
@@ -188,23 +190,6 @@ em{
     opacity: 1;
     transform: scale(1);
 }
-
-.dark-theme figure.highlight,
-.dark-theme .post-content pre{
-    color: #d4d4d4;
-    background: #1e1e1e;
-    border-color: #333;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, .5);
-}
-
-.dark-theme figure.highlight::before,
-.dark-theme .post-content pre::before{
-    background: #2d2d2d;
-    border-bottom-color: #333;
-}
-
-.dark-theme figure.highlight pre,
-.dark-theme .post-content pre code{ color: #d4d4d4 }
 
 blockquote{
     border-color: #6f9fc7;
@@ -222,73 +207,6 @@ input[type="text"], input[type="search"], input[type="email"], input[type="url"]
 }
 input, textarea, pre, hr, blockquote{
     transition: border-color .3s, background .3s;
-}
-
-/* - 夜间风格 */
-.dark-theme{
-    color: #bbb;
-    background-color: #222;
-
-    --blue: #6e8aad;
-    --light-blue: #6f9fc7;
-
-    --border: #444;
-    --light-border: #333;
-
-    --light-background: #333;
-
-    --lighter-gray: #3a3a3a;
-}
-
-/* -- 额外适配 */
-.dark-theme::-webkit-scrollbar{
-    border-color: transparent;
-    background: rgba(255, 255, 255, .2);
-}
-
-.dark-theme img{
-    filter: brightness(60%);
-    -webkit-filter: brightness(60%);
-}
-
-.dark-theme pre{
-    background-image: linear-gradient(rgba(255, 255, 255, .05) 50%, transparent 0);
-}
-
-.dark-theme blockquote{
-    color: #ddd;
-    border-color: #eb9c26;
-    background-color: rgba(255, 255, 255, .05);
-}
-
-.dark-theme iframe, .dark-theme em{ opacity: .6 }
-
-.dark-theme :not(pre) > code{
-    color: #ffa5a5;
-    background: rgba(255, 255, 255, .2);
-}
-
-.dark-theme .head-search input{
-    background: #666;
-    border-color: transparent;
-}
-.dark-theme .head-search input::-webkit-input-placeholder{ color: #bbb }
-
-.dark-theme .article-list,
-.dark-theme .article-list.active{
-    background: rgba(34, 34, 34, .88);
-}
-
-.dark-theme header{
-    background-color: rgba(34, 34, 34, .78);
-}
-
-.dark-theme .head-menu .sub-menu{
-    background-color: rgba(40, 40, 40, .88);
-}
-
-.dark-theme .head-menu .sub-menu:before{
-    background-color: #333;
 }
 
 /* 1 - 页眉
@@ -528,21 +446,6 @@ header{
 .head-search .search-results a:hover{
     color: #6f9fc7;
     background: rgba(0, 0, 0, .03);
-}
-
-.dark-theme .head-search .search-results{
-    background: #333;
-    border-color: #444;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
-}
-
-.dark-theme .head-search .search-results a{
-    color: #bbb;
-}
-
-.dark-theme .head-search .search-results a:hover{
-    color: #6e8aad;
-    background: rgba(255, 255, 255, .05);
 }
 
 @media screen and (max-width: 600px){
@@ -800,11 +703,60 @@ article img{
     color: var(--blue);
 }
 
-.dark-theme .post-copyright{
-    color: #999;
-    background: rgba(51, 51, 51, .6);
-    border-color: #333;
-    border-left-color: #6e8aad;
+/* - 友链 */
+.friends-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1em;
+    margin-bottom: 3em;
+}
+
+.friend-card{
+    display: flex;
+    align-items: center;
+    padding: 1em 1.2em;
+    color: inherit;
+    background: rgba(255, 255, 255, .65);
+    border: 1px solid var(--light-border);
+    border-radius: .5em;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+
+.friend-card:hover{
+    transform: translateY(-3px);
+    border-color: var(--blue);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+}
+
+.friend-avatar{
+    width: 3em;
+    height: 3em;
+    flex-shrink: 0;
+    margin-right: 1em;
+    border-radius: 66%;
+    background: #eee;
+}
+
+.friend-info{
+    min-width: 0;
+}
+
+.friend-info h3{
+    margin: 0;
+    font-size: 1em;
+    color: var(--blue);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-info p{
+    margin: .3em 0 0;
+    font-size: .85em;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 article h1, article h2, article h3{
@@ -1014,6 +966,15 @@ article h1:before{ font-weight: bold }
 .article-list a{
     display: block;
     margin-bottom: .5em;
+    padding: .1em .4em;
+    border-radius: .2em;
+    transition: color .2s, background-color .2s;
+}
+
+.article-list a.active{
+    color: #fff;
+    background-color: #6f9fc7;
+    background-color: var(--blue);
 }
 
 .article-list .item-2:before,
@@ -1032,9 +993,6 @@ article h1:before{ font-weight: bold }
 
 @media screen and (min-width: 800px){
     body.has-trees{ margin-right: 15em }
-
-    .dark-theme .article-list,
-    .dark-theme .article-list.active{ background-color: rgba(34, 34, 34, .88) }
 
     .article-list{
         top: 3.2em;
@@ -1239,4 +1197,212 @@ pre[class*="language-"].line-numbers {
     display: block;
     padding-right: 0.8em;
     text-align: right;
+}
+
+/* ========================================
+   夜间模式（重做版）
+   基于 CSS 变量统一配色，覆盖全部组件
+   ======================================== */
+.dark-theme{
+    color: #c4c4c4;
+    background-color: #1b1f24;
+
+    --blue: #6e8aad;
+    --light-blue: #7fa8d0;
+
+    --border: #3a4149;
+    --light-border: #2e343b;
+
+    --light-background: #232830;
+    --lighter-gray: #2c333c;
+}
+
+/* 页面底色与背景图遮罩 */
+.dark-theme body:before{
+    opacity: .06;
+}
+
+/* 滚动条 */
+.dark-theme::-webkit-scrollbar{
+    border-color: transparent;
+    background: rgba(0, 0, 0, .3);
+}
+.dark-theme::-webkit-scrollbar-thumb{
+    background: #4a5560;
+}
+.dark-theme::-webkit-scrollbar-thumb:hover{
+    background: #5c6a78;
+}
+
+/* 页眉 / 搜索 / 菜单 */
+.dark-theme header{
+    background-color: rgba(27, 31, 36, .82);
+    border-bottom-color: #2e343b;
+}
+.dark-theme .toggle-btn:hover,
+.dark-theme .light-btn:hover,
+.dark-theme .search-btn:hover{
+    background-color: rgba(255, 255, 255, .08);
+}
+.dark-theme .head-search input{
+    color: #d0d0d0;
+    background-color: #2a313a;
+    border-color: #3a4149;
+}
+.dark-theme .head-search input::placeholder{ color: #7d8794 }
+.dark-theme .head-search .search-results{
+    background-color: #232830;
+    border-color: #3a4149;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+}
+.dark-theme .head-search .search-results a{
+    color: #c4c4c4;
+}
+.dark-theme .head-search .search-results a:hover{
+    color: #7fa8d0;
+    background-color: rgba(255, 255, 255, .06);
+}
+.dark-theme .head-menu .sub-menu{
+    background-color: rgba(35, 40, 48, .94);
+    border-color: #3a4149;
+}
+.dark-theme .head-menu .sub-menu:before{
+    background-color: #232830;
+    border-color: #3a4149 #3a4149 transparent transparent;
+}
+
+/* 正文基础 */
+.dark-theme a{ color: #7fa8d0 }
+.dark-theme a:hover{ color: #9fc0e8 }
+.dark-theme .post-title h2,
+.dark-theme .page-title h2{
+    color: #7fa8d0;
+}
+.dark-theme .home-title h1{ color: #7fa8d0 }
+.dark-theme .home-title .home-hitokoto{ color: #8b95a1 }
+
+/* 卡片类背景 */
+.dark-theme .post-copyright{
+    color: #9aa4b0;
+    background-color: rgba(35, 40, 48, .7);
+    border-color: #2e343b;
+    border-left-color: #6e8aad;
+}
+.dark-theme .friend-card{
+    background-color: rgba(35, 40, 48, .7);
+    border-color: #2e343b;
+}
+.dark-theme .friend-card:hover{
+    border-color: #6e8aad;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+}
+.dark-theme .friend-avatar{
+    background-color: #2c333c;
+}
+.dark-theme .friend-info p{ color: #8b95a1 }
+
+/* 代码块 */
+.dark-theme .post-content figure.highlight,
+.dark-theme .post-content pre{
+    color: #d4d4d4;
+    background-color: #16191d;
+    border-color: #2e343b;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
+}
+.dark-theme .post-content figure.highlight::before,
+.dark-theme .post-content pre::before{
+    background: #20242a;
+    border-bottom-color: #2e343b;
+}
+.dark-theme .post-content figure.highlight pre,
+.dark-theme .post-content pre code{
+    color: #d4d4d4;
+    background: none !important;
+}
+.dark-theme .post-content .copy-btn{ color: #7d8794 }
+.dark-theme .post-content .copy-btn:hover{
+    color: #d0d0d0;
+    background-color: rgba(255, 255, 255, .08);
+}
+.dark-theme .post-content .copy-btn.copied{ color: #5ec4a1 }
+
+/* 行内代码 / 引用 / 表格 */
+.dark-theme :not(pre) > code{
+    color: #f0a3a3;
+    background-color: rgba(255, 255, 255, .12);
+}
+.dark-theme blockquote{
+    color: #c4c4c4;
+    background-color: rgba(255, 255, 255, .04);
+    border-color: #6e8aad;
+}
+.dark-theme hr{
+    border-color: #2e343b;
+}
+.dark-theme table tr{
+    border-color: #2e343b;
+}
+.dark-theme input,
+.dark-theme textarea{
+    color: #d0d0d0;
+    background-color: #232830;
+    border-color: #3a4149;
+}
+
+/* 文章目录 */
+.dark-theme .article-list,
+.dark-theme .article-list.active{
+    background-color: rgba(27, 31, 36, .82);
+}
+.dark-theme .article-list .title{
+    border-color: #3a4149;
+}
+.dark-theme .article-list a.active{
+    color: #fff;
+    background-color: #6e8aad;
+}
+
+/* 浮动按钮（返回顶部/目录）夜间半透明，避免滚动时出现突兀方块 */
+.dark-theme footer .to-top,
+.dark-theme footer .toggle-list{
+    color: #7fa8d0;
+    background-color: rgba(27, 31, 36, .82);
+    border-color: #3a4149;
+}
+.dark-theme footer .to-top:hover,
+.dark-theme footer .toggle-list:hover{
+    color: #9fc0e8;
+    border-color: #6e8aad;
+}
+
+/* 阅读进度条 */
+.dark-theme #reading-bar{
+    background: #7fa8d0;
+}
+
+/* 图片：不再强制压暗，仅对高亮图轻微降低，避免刺眼 */
+.dark-theme main img{
+    filter: brightness(.88);
+    -webkit-filter: brightness(.88);
+}
+.dark-theme main img:hover{
+    filter: brightness(1);
+    -webkit-filter: brightness(1);
+}
+
+/* 复制链接按钮 */
+.dark-theme .post-copyright .copy-link{ color: #7fa8d0 }
+.dark-theme .post-copyright .copy-link.copied{ color: #5ec4a1 }
+
+/* 行号 */
+.dark-theme .line-numbers-rows > span::before{
+    color: #6b7683;
+}
+
+/* 减少动画偏好时关闭过渡 */
+@media (prefers-reduced-motion: reduce){
+    body,
+    .dark-theme body{
+        transition: none !important;
+    }
 }
