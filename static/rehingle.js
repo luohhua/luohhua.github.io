@@ -220,6 +220,193 @@ var Paul_ReHingle = function (config) {
 // 图片缩放
 ks.image(".post-content:not(.is-special) img, .page-content:not(.is-special) img");
 
+// 图片懒加载：优先使用原生 loading="lazy"，无 ks-* 占位属性的图片统一处理
+(function () {
+    var images = document.querySelectorAll(".post-content:not(.is-special) img, .page-content:not(.is-special) img");
+
+    ks.each(images, function (img) {
+        if (img.getAttribute("ks-original") || img.getAttribute("ks-thumb")) {
+            return; // 交由 Kico Style 的懒加载机制处理
+        }
+
+        if (!img.hasAttribute("loading")) {
+            img.setAttribute("loading", "lazy");
+        }
+
+        if (!img.hasAttribute("decoding")) {
+            img.setAttribute("decoding", "async");
+        }
+    });
+})();
+
+// 代码块一键复制
+(function () {
+    var blocks = document.querySelectorAll(".post-content pre, .page-content pre");
+
+    ks.each(blocks, function (pre) {
+        var btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.type = "button";
+        btn.title = "复制代码";
+
+        var copyText = function () {
+            var code = pre.querySelector("code");
+            var text = code ? code.innerText : pre.innerText;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done, fallback);
+            }
+            else {
+                fallback();
+            }
+
+            function fallback() {
+                var area = document.createElement("textarea");
+                area.value = text;
+                document.body.appendChild(area);
+                area.select();
+                try {
+                    document.execCommand("copy");
+                    done();
+                }
+                catch (err) {}
+                document.body.removeChild(area);
+            }
+
+            function done() {
+                btn.classList.add("copied");
+                setTimeout(function () {
+                    btn.classList.remove("copied");
+                }, 1500);
+            }
+        };
+
+        btn.addEventListener("click", copyText);
+        pre.appendChild(btn);
+    });
+})();
+
+// 图片加载动画：加载完成后淡入
+(function () {
+    var images = document.querySelectorAll(".post-content:not(.is-special) img, .page-content:not(.is-special) img");
+
+    ks.each(images, function (img) {
+        img.classList.add("img-loading");
+
+        var reveal = function () {
+            img.classList.add("img-loaded");
+        };
+
+        if (img.complete && img.naturalWidth > 0) {
+            reveal();
+        }
+        else {
+            img.addEventListener("load", reveal);
+            img.addEventListener("error", reveal);
+        }
+    });
+})();
+
+// 阅读进度条
+(function () {
+    var bar = document.getElementById("reading-bar");
+
+    if (!bar) {
+        return;
+    }
+
+    var update = function () {
+        var doc = document.documentElement;
+        var total = doc.scrollHeight - window.innerHeight;
+        var ratio = total > 0 ? window.scrollY / total : 0;
+        bar.style.width = (ratio * 100) + "%";
+    };
+
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+})();
+
+// 复制文章链接
+(function () {
+    var btn = document.querySelector(".copy-link");
+
+    if (!btn) {
+        return;
+    }
+
+    var done = function () {
+        btn.classList.add("copied");
+        btn.innerHTML = '<i class="fa fa-check"></i> 已复制';
+        setTimeout(function () {
+            btn.classList.remove("copied");
+            btn.innerHTML = '<i class="fa fa-link"></i> 点击复制';
+        }, 1500);
+    };
+
+    var fallback = function () {
+        var area = document.createElement("textarea");
+        area.value = window.location.href;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        area.setSelectionRange(0, area.value.length);
+
+        var ok = false;
+        try {
+            ok = document.execCommand("copy");
+        }
+        catch (err) {}
+        document.body.removeChild(area);
+
+        if (ok) {
+            done();
+        }
+    };
+
+    btn.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(window.location.href).then(done).catch(fallback);
+        }
+        else {
+            fallback();
+        }
+    });
+})();
+
+// pangu 排版：中英文之间自动加空格
+(function () {
+    var containers = document.querySelectorAll(".post-content:not(.is-special), .page-content:not(.is-special)");
+
+    ks.each(containers, function (container) {
+        var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+            acceptNode: function (node) {
+                var parent = node.parentElement;
+                if (parent && /^(PRE|CODE|SCRIPT|STYLE|KBD|SAMP)$/.test(parent.tagName)) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+
+        var node;
+        while ((node = walker.nextNode())) {
+            var text = node.nodeValue;
+            var spaced = text
+                .replace(/([\u4e00-\u9fa5])([A-Za-z0-9])/g, "$1 $2")
+                .replace(/([A-Za-z0-9])([\u4e00-\u9fa5])/g, "$1 $2");
+
+            if (spaced !== text) {
+                node.nodeValue = spaced;
+            }
+        }
+    });
+})();
+
 // 请保留版权说明
 if(window.console && window.console.log){
     console.log("%c ReHingle %c https://github.com/luohhua/hexo-theme-rehingle ","color: #fff; margin: 1em 0; padding: 5px 0; background: #6f9fc7;","margin: 1em 0; padding: 5px 0; background: #efefef;");

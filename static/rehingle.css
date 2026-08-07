@@ -146,6 +146,49 @@ em{
     color: inherit;
 }
 
+/* - 代码块复制按钮 */
+.post-content .copy-btn{
+    top: .45em;
+    right: .8em;
+    color: #999;
+    font-size: .8em;
+    cursor: pointer;
+    position: absolute;
+    padding: .2em .6em;
+    border: 0;
+    background: transparent;
+    border-radius: .25em;
+    transition: color .2s, background .2s;
+}
+
+.post-content .copy-btn:hover{
+    color: #555;
+    background: rgba(0, 0, 0, .06);
+}
+
+.post-content .copy-btn.copied{
+    color: #27a17e;
+}
+
+.dark-theme .post-content .copy-btn{ color: #888 }
+.dark-theme .post-content .copy-btn:hover{
+    color: #ccc;
+    background: rgba(255, 255, 255, .08);
+}
+.dark-theme .post-content .copy-btn.copied{ color: #5ec4a1 }
+
+/* - 图片加载动画 */
+.post-content img.img-loading{
+    opacity: 0;
+    transform: scale(.98);
+    transition: opacity .45s cubic-bezier(.22, .61, .36, 1), transform .45s cubic-bezier(.22, .61, .36, 1);
+}
+
+.post-content img.img-loaded{
+    opacity: 1;
+    transform: scale(1);
+}
+
 .dark-theme figure.highlight,
 .dark-theme .post-content pre{
     color: #d4d4d4;
@@ -640,8 +683,46 @@ main img {
 .post-meta .user:before{ content: "\f007" }
 .post-meta .comments:before{ content: "\f086" }
 .post-meta .view:before{ content: "\f080" }
+.post-meta .words:before,
+.post-meta .updated:before{ content: none }
+.post-meta .words .fa,
+.post-meta .updated .fa{ margin-right: .2em }
 .post-meta .post-views:before{ content: none }
 .post-meta .post-views .fa-eye{ margin-right: .2em }
+
+/* - 阅读进度条 */
+.reading-progress{
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 99;
+    position: fixed;
+    background: transparent;
+}
+
+.reading-progress #reading-bar{
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #6f9fc7;
+    background: var(--blue);
+    transition: width .1s linear;
+}
+
+/* - 复制链接按钮 */
+.post-copyright .copy-link{
+    color: var(--blue);
+    font-size: .9em;
+    cursor: pointer;
+    padding: 0 .2em;
+    border: 0;
+    background: none;
+    transition: color .2s;
+}
+
+.post-copyright .copy-link:hover{ text-decoration: underline }
+.post-copyright .copy-link.copied{ color: #27a17e }
 
 /* - 换页 */
 .page-navigator{
@@ -688,7 +769,43 @@ article img{
 }
 
 .post-content, .page-content{ animation: fade-in-top .3s .2s backwards; -webkit-animation: fade-in-top .3s .2s backwards; }
-.post-content, .page-content, .post-near, .post-tags, .post-author{ margin-bottom: 3em }
+.post-content, .page-content, .post-near, .post-tags, .post-author, .post-copyright{ margin-bottom: 3em }
+
+/* - 文章版权声明 */
+.post-copyright{
+    padding: .8em 1.2em;
+    font-size: .9em;
+    color: #777;
+    background: rgba(255, 255, 255, .6);
+    border: 1px solid #eee;
+    border-left: 3px solid #6f9fc7;
+    border-left-color: var(--blue);
+    border-radius: var(--radius);
+}
+
+.post-copyright ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.post-copyright li{
+    margin: .2em 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-copyright a{
+    color: var(--blue);
+}
+
+.dark-theme .post-copyright{
+    color: #999;
+    background: rgba(51, 51, 51, .6);
+    border-color: #333;
+    border-left-color: #6e8aad;
+}
 
 article h1, article h2, article h3{
     margin-top: 3rem;
