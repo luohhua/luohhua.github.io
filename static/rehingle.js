@@ -536,6 +536,21 @@ ks.image(".post-content:not(.is-special) img, .page-content:not(.is-special) img
     });
 })();
 
+// 友链卡片鼠标光效（Windows 10 风格：光晕跟随光标）
+(function () {
+    var cards = document.querySelectorAll(".friend-card");
+
+    ks.each(cards, function (card) {
+        card.addEventListener("mousemove", function (e) {
+            var rect = card.getBoundingClientRect();
+            var x = ((e.clientX - rect.left) / rect.width) * 100;
+            var y = ((e.clientY - rect.top) / rect.height) * 100;
+            card.style.setProperty("--mx", x + "%");
+            card.style.setProperty("--my", y + "%");
+        });
+    });
+})();
+
 // pangu 排版：中英文之间自动加空格
 (function () {
     var containers = document.querySelectorAll(".post-content:not(.is-special), .page-content:not(.is-special)");
