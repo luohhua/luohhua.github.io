@@ -536,18 +536,58 @@ ks.image(".post-content:not(.is-special) img, .page-content:not(.is-special) img
     });
 })();
 
-// 友链卡片鼠标光效（Windows 10 风格：光晕跟随光标）
+// Pointer-driven 3D tilt; measure before transforming to avoid feedback jitter.
 (function () {
-    var cards = document.querySelectorAll(".friend-card");
+    var enabled = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+    document.querySelectorAll('.friend-card').forEach(function (card) {
+        var bounds, frame = 0, x = .5, y = .5;
+        // Decorative particles are built once and animated only while hovered.
+        var particles = document.createElement('span');
+        particles.className = 'friend-particles';
+        particles.setAttribute('aria-hidden', 'true');
+        for (var i = 0; i < 9; i++) {
+            var particle = document.createElement('i');
+            particle.style.setProperty('--px', (Math.random() * 100 - 50) + 'px');
+            particle.style.setProperty('--py', (Math.random() * 80 - 40) + 'px');
+            particle.style.setProperty('--delay', (-Math.random() * 3) + 's');
+            particle.style.setProperty('--duration', (2 + Math.random() * 2) + 's');
+            particle.style.setProperty('--drift', (Math.random() * 24 - 12) + 'px');
+            particles.appendChild(particle);
+        }
+        card.appendChild(particles);
 
-    ks.each(cards, function (card) {
-        card.addEventListener("mousemove", function (e) {
-            var rect = card.getBoundingClientRect();
-            var x = ((e.clientX - rect.left) / rect.width) * 100;
-            var y = ((e.clientY - rect.top) / rect.height) * 100;
-            card.style.setProperty("--mx", x + "%");
-            card.style.setProperty("--my", y + "%");
+        function reset() {
+            cancelAnimationFrame(frame);
+            frame = 0;
+            bounds = null;
+            card.classList.remove('is-tilting');
+            ['--tilt-x', '--tilt-y', '--mx', '--my', '--depth-x', '--depth-y'].forEach(function (key) { card.style.removeProperty(key); });
+        }
+        card.addEventListener('pointerenter', function (event) {
+            if (!enabled.matches || event.pointerType === 'touch') return;
+            bounds = card.getBoundingClientRect();
+            card.classList.add('is-tilting');
         });
+        card.addEventListener('pointermove', function (event) {
+            if (!enabled.matches || !bounds) return;
+            x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+            y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+            if (frame) return;
+            frame = requestAnimationFrame(function () {
+                card.style.setProperty('--tilt-x', ((.5 - y) * 18) + 'deg');
+                card.style.setProperty('--tilt-y', ((x - .5) * 18) + 'deg');
+                card.style.setProperty('--depth-x', ((x - .5) * -10) + 'px');
+                card.style.setProperty('--depth-y', ((y - .5) * -10) + 'px');
+                card.style.setProperty('--mx', (x * 100) + '%');
+                card.style.setProperty('--my', (y * 100) + '%');
+                frame = 0;
+            });
+        });
+        card.addEventListener('pointerleave', reset);
+        card.addEventListener('pointercancel', reset);
+        window.addEventListener('scroll', reset, {passive: true});
+        window.addEventListener('resize', reset);
+        enabled.addEventListener('change', reset);
     });
 })();
 
