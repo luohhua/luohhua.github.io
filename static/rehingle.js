@@ -624,3 +624,34 @@ ks.image(".post-content:not(.is-special) img, .page-content:not(.is-special) img
 if(window.console && window.console.log){
     console.log("%c ReHingle %c https://github.com/luohhua/hexo-theme-rehingle ","color: #fff; margin: 1em 0; padding: 5px 0; background: #6f9fc7;","margin: 1em 0; padding: 5px 0; background: #efefef;");
 }
+
+// Serialize random backgrounds: unique requests, no burst and no automatic retries.
+(function () {
+    var cards = Array.from(document.querySelectorAll('[data-random-bg]'));
+    var session = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+    function next(index) {
+        if (index >= cards.length) return;
+        var card = cards[index];
+        var url = new URL(card.dataset.randomBg, location.href);
+        url.searchParams.set('_card', session + '-' + index);
+        var startedAt = Date.now();
+        var image = new Image();
+        var done = false;
+        var timeout;
+        function finish(loaded) {
+            if (done) return;
+            done = true;
+            clearTimeout(timeout);
+            image.onload = image.onerror = null;
+            if (loaded) card.style.setProperty('--card-bg', 'url(' + JSON.stringify(url.href) + ')');
+            else image.src = '';
+            var remaining = Math.max(0, 500 - (Date.now() - startedAt));
+            setTimeout(function () { next(index + 1); }, remaining);
+        }
+        image.onload = function () { finish(true); };
+        image.onerror = function () { finish(false); };
+        timeout = setTimeout(function () { finish(false); }, 15000);
+        image.src = url.href;
+    }
+    next(0);
+})();

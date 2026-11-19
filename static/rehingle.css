@@ -1645,3 +1645,7 @@ pre[class*="language-"].line-numbers {
 /* Keep the original half-of-50em card width while making room for three. */
 .friends-page>.wrap{max-width:75.6em}
 .friends-page .friends-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,24.4em),24.4em))}
+
+.friend-info .friend-name{display:flex;align-items:center;gap:.45em}
+.friend-name>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.friend-name .friend-type-icon{flex:none;font-size:.85em;opacity:.9;line-height:1}
