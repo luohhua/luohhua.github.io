@@ -24,12 +24,6 @@ var Paul_ReHingle = function (config) {
 
         ks.select(".light-btn").onclick = this.night;
 
-        var search = document.getElementsByClassName("search-btn")[0];
-        var bar = document.getElementsByClassName("head-search")[0];
-
-        search.addEventListener("click", function () {
-            bar.classList.toggle("active");
-        })
     };
 
     // 关灯切换
@@ -336,43 +330,7 @@ var Paul_ReHingle = function (config) {
     // ! Hexo 特别功能
     //
 
-    // 本地搜索
-    this.hexo_search = function () {
-        var form = ks.select(".head-search"), input = ks.select(".head-search input");
-        var wrap = form.querySelector(".search-results");
-        var data;
 
-        try { data = JSON.parse(document.getElementById("search-data").textContent); } catch(e){ return }
-
-        form.onsubmit = function (ev) { ev.preventDefault() };
-
-        input.addEventListener("input", function () {
-            var q = input.value.trim().toLowerCase();
-            if(!q || q.length < 2){ wrap.innerHTML = ""; wrap.classList.remove("active"); return }
-
-            var matched = data.filter(function (p) {
-                var tagMatch = p.tags && p.tags.some(function(t){ return t.toLowerCase().indexOf(q) !== -1 });
-                var catMatch = p.categories && p.categories.some(function(c){ return c.toLowerCase().indexOf(q) !== -1 });
-                var contentMatch = p.content && p.content.toLowerCase().indexOf(q) !== -1;
-                return p.title.toLowerCase().indexOf(q) !== -1 ||
-                       (p.excerpt && p.excerpt.toLowerCase().indexOf(q) !== -1) ||
-                       contentMatch || tagMatch || catMatch;
-            }).slice(0, 8);
-
-            if(!matched.length){ wrap.innerHTML = ""; wrap.classList.remove("active"); return }
-
-            wrap.classList.add("active");
-            wrap.innerHTML = matched.map(function (p) {
-                return '<a href="' + p.path + '">' + p.title + '</a>';
-            }).join("");
-        });
-
-        document.addEventListener("click", function (e) {
-            if(!form.contains(e.target)){ wrap.classList.remove("active") }
-        });
-    }
-
-    this.hexo_search();
 };
 
 // 图片缩放
@@ -625,16 +583,26 @@ if(window.console && window.console.log){
     console.log("%c ReHingle %c https://github.com/luohhua/hexo-theme-rehingle ","color: #fff; margin: 1em 0; padding: 5px 0; background: #6f9fc7;","margin: 1em 0; padding: 5px 0; background: #efefef;");
 }
 
-// Serialize random backgrounds: unique requests, no burst and no automatic retries.
+// Random backgrounds: two in flight at most, with at least 500ms between starts.
 (function () {
     var cards = Array.from(document.querySelectorAll('[data-random-bg]'));
     var session = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
-    function next(index) {
-        if (index >= cards.length) return;
-        var card = cards[index];
+    var index = 0, active = 0, lastStart = -Infinity, timer = null;
+    function pump() {
+        clearTimeout(timer);
+        timer = null;
+        if (index >= cards.length || active >= 2) return;
+        var remaining = 500 - (Date.now() - lastStart);
+        if (remaining > 0) {
+            timer = setTimeout(pump, remaining);
+            return;
+        }
+        var current = index++;
+        var card = cards[current];
         var url = new URL(card.dataset.randomBg, location.href);
-        url.searchParams.set('_card', session + '-' + index);
-        var startedAt = Date.now();
+        url.searchParams.set('_card', session + '-' + current);
+        lastStart = Date.now();
+        active++;
         var image = new Image();
         var done = false;
         var timeout;
@@ -645,13 +613,14 @@ if(window.console && window.console.log){
             image.onload = image.onerror = null;
             if (loaded) card.style.setProperty('--card-bg', 'url(' + JSON.stringify(url.href) + ')');
             else image.src = '';
-            var remaining = Math.max(0, 500 - (Date.now() - startedAt));
-            setTimeout(function () { next(index + 1); }, remaining);
+            active--;
+            pump();
         }
         image.onload = function () { finish(true); };
         image.onerror = function () { finish(false); };
         timeout = setTimeout(function () { finish(false); }, 15000);
         image.src = url.href;
+        pump();
     }
-    next(0);
+    pump();
 })();
